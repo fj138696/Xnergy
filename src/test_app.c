@@ -1,7 +1,7 @@
 /* test_app.c */
 /** Assumptions: 
-* Button A pressed for 1sec - RED LED is ON and Blinking for 10Hz - Button A is pressed again RED LED is OFF
-* Button B pressed for 5sec - GREEN LED is ON continously - Button A is pressed again GREEN LED is OFF
+* Button 1 pressed for 1sec - GREEN LED is ON and Blinking for 1sec 
+* Button 2 pressed for 5sec - RED LED is ON continously 
 **/
 
 #include "led.h"
@@ -17,7 +17,7 @@ void test_app_button1_handler(void) {
 	button1 = button1_get_state();
 
     if (button1 == BUTTON_RELEASED) {
-		set_led(GREEN, LED_ON, 100);
+		set_led(GREEN, LED_ON, 1); /*Blink for 1sec*/
 	}
 	return;
 

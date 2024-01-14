@@ -29,8 +29,8 @@ static void button1_set_port(void) {
 
 	/* Input Capture Register for GPIO Port 0	*/
 	/* depeding on MCU datasheet */
-	GPIO0_SETTING_1 = BIT_DISABLE; 			/* Clear some flags if necessary */
-	GPIO0_SETTING_2 = BOTH_EDGE_DETECT_ENABLE; 	/* Enable some flags if necessary */
+	GPIO0_SETTING_1 = ACTIVE_HIGH;				/* Active high setting */
+	GPIO0_SETTING_2 = BOTH_EDGE_DETECT_ENABLE; 	/* Assume same interrupt for both edge detection */
 	return;
 
 }
@@ -50,8 +50,8 @@ static void button2_set_port(void) {
 
 	/* Input Capture Register for GPIO Port 0	*/
 	/* depeding on MCU datasheet */
-	GPIO1_SETTING_1 = BIT_DISABLE; 					/* Clear some flags if necessary */
-	GPIO1_SETTING_2 = BOTH_EDGE_DETECT_DISABLE; 		/* Assume same interrupt for both edge detection */
+	GPIO1_SETTING_1 = ACTIVE_HIGH; 					/* Active high setting */
+	GPIO1_SETTING_2 = BOTH_EDGE_DETECT_ENABLE; 		/* Assume same interrupt for both edge detection */
 	return;
 
 }
@@ -63,7 +63,7 @@ void button1_interrupt_handler(void) {
 
 	}
 	else if (button1_debounce_state == DEBOUNCE_START) {
-		button1_debounce_state = DEBOUNCE_END;	/* Detected the END RISING edge*/
+		button1_debounce_state = DEBOUNCE_END;		/* Detected the END RISING edge*/
 	}
 	return;
 
@@ -123,29 +123,33 @@ void button2_debounce(void) {
 
 }
 
-void button_main(void) {
-	return;
-
-}
 static void button_init(void){
 
-	const static timer_param_t button_param = {
-		5,					/* cyclic counter, 5ms*/
+	const static timer_param_t button1_debounce_param = {
+		5u,					/* cyclic counter, 5ms*/
 		TIMER_CYCLIC,		/* cyclic single*/
 		TIMER_HIGH,			/* Timer ID, HIGH(1ms)*/
-		&button_main
+		& button1_debounce
 	};
-	
-	timer_create(&button_param); /* assume that scheduler will call the button_param every 5ms*/
-	
-	
-	// interrupt_disable();
+
+	timer_create(&button1_debounce_param); /* assume that timer will call the button_param every 5ms*/
+
+	const static timer_param_t button2_debounce_param = {
+	5u,					/* cyclic counter, 5ms*/
+	TIMER_CYCLIC,		/* cyclic single*/
+	TIMER_HIGH,			/* Timer ID, HIGH(1ms)*/
+	&button1_debounce
+	};
+
+	timer_create(&button1_debounce_param); /* assume that timer will call the button_param every 5ms*/
+
+	// call interrupt_disable();
 	
 	// initialize buttons
 	button1_set_port();
 	button2_set_port();
 	
-	//interrupt_enable();
+	// call interrupt_enable();
 	
 	gpio0_interrupt_set_handler(&button1_interrupt_handler);
 	gpio1_interrupt_set_handler(&button2_interrupt_handler);

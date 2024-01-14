@@ -22,6 +22,7 @@ typedef struct {
 	funcp_t  timer_handler;
 }timer_param_t;
 
+#define SEC_TO_MS 1000u
 extern void timer_create(const timer_param_t *attr_paramater);
 
 #endif // TIMER_H
