@@ -4,6 +4,7 @@
 #include "gpio.h" 
 #include "timer.h" 
 
+/* Explicit Buttons are declared for simplicity and less memory overhead*/
 button_sts_t button1;
 ui8_t last_button1_read;
 
@@ -147,7 +148,6 @@ static void button_init(void){
 	button1.logic_level = ACTIVE_HIGH;
 	button1.edge_type = TRIGGER_EDGE;
 	button1.state = BUTTON_RELEASED;
-	button1.low_level_sts = BUTTON_RELEASED;
 	// call interrupt_disable();
 	button1_set_port();
 	// call interrupt_enable();
@@ -155,7 +155,6 @@ static void button_init(void){
 	button2.logic_level = ACTIVE_LOW;
 	button2.edge_type = TRIGGER_LEVEL;
 	button2.state = BUTTON_RELEASED;
-	button2.low_level_sts = BUTTON_RELEASED;
 	// call interrupt_disable();
 	button2_set_port();
 	// call interrupt_enable();

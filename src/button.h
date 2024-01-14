@@ -6,18 +6,12 @@
 #include "sys_type.h"
 
 // Define button 
-typedef enum button {
-	PB_1 = 0,
-	PB_2,
-	PB_INVALID
-}buttons_t;
 
 typedef struct {
     ui8_t state;
     ui8_t read;
     ui8_t logic_level; //setting of ACTIVE HIGH or ACTIVE LOW
     ui8_t edge_type;
-    ui8_t low_level_sts; //current state of Low level
 } button_sts_t;
 
 
