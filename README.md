@@ -10,8 +10,8 @@ test_app.c
 
 button.c 
 * handles GPIO initial setting
-* GPIO edge level interrupt
-* GPIO reading debouce
+* Edge/Level Detection
+* Logic Level: ACTIVE HIGH or ACTIVE LOW setting
 * button state if pressed or released
 
 led.c
@@ -19,7 +19,7 @@ led.c
 * GPIO setting to ON and OFF
 * cyclic timer for blinking
 
-Dummy functions and header to compile error
+Dummy functions and header to avoid compile error
 * timer.c
 * timer.h
 * gpio.c
