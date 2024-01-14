@@ -87,7 +87,7 @@ static void led_green_ope(led_state_t onoff_state, ui8_t interval){ // assume bl
 	if(onoff_state == LED_ON){
 		led_green_state = LED_ON;
 		if (interval > 0) {
-			led_green_blink_interval = interval;
+			led_green_blink_interval = (interval * SEC_TO_MS) / 100u;
 			led_green_state = LED_BLINK_ON;
 			led_green_blink_ctr = interval;
 		}
@@ -105,7 +105,7 @@ static void led_red_ope(led_state_t onoff_state, ui8_t interval) { // assume bli
 	if (onoff_state == LED_ON) {
 		led_red_state = LED_ON;
 		if (interval > 0) {
-			led_red_blink_interval = interval;
+			led_red_blink_interval = (interval * SEC_TO_MS) / 100u;
 			led_red_state = LED_BLINK_ON;
 			led_red_blink_ctr = interval;
 		}
@@ -135,7 +135,7 @@ void set_led(led_number_t led_number, led_state_t onoff_state, ui8_t interval)
 void led_init(void){
 
 	const static timer_param_t led_blink_param = {
-		10u,					/* cyclic counter, 100ms*/
+		10u,				/* cyclic counter, 100ms*/
 		TIMER_CYCLIC,		/* cyclic single*/
 		TIMER_LOW,			/* Timer ID, HIGH(10ms)*/
 		&led_blink_handler
