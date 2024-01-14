@@ -10,8 +10,8 @@ test_app.c
 
 button.c 
 * handles GPIO initial setting
-* GPIO edge level interrupt
-* GPIO reading debouce
+* Edge/Level Detection
+* Logic Level: ACTIVE HIGH or ACTIVE LOW setting
 * button state if pressed or released
 
 led.c
