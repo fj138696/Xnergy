@@ -19,7 +19,7 @@ led.c
 * GPIO setting to ON and OFF
 * cyclic timer for blinking
 
-Dummy functions and header to compile error
+Dummy functions and header to avoid compile error
 * timer.c
 * timer.h
 * gpio.c
