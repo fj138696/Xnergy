@@ -48,6 +48,8 @@ void test_app_main(void) {
 	}
 	return;
 }
+
+/* Assume this is called in the Main function */
 void test_app_init(void) {
 
 	const static timer_param_t test_app_param = {

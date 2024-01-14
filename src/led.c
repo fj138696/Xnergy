@@ -132,6 +132,7 @@ void set_led(led_number_t led_number, led_state_t onoff_state, ui8_t interval)
 	return;
 }
 
+/* Assume this is called in the Main function */
 void led_init(void){
 
 	const static timer_param_t led_blink_param = {
