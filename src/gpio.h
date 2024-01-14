@@ -8,10 +8,8 @@
 #define ACTIVE_HIGH				0x00u
 #define ACTIVE_LOW				0x01u
 
-#define TRIGGER_RISING_EDGE 	0x00u
-#define TRIGGER_FALLING_EDGE 	0x01u
-#define TRIGGER_HIGH_LVL 		0x02u
-#define TRIGGER_LOW_LVL		 	0x03u
+#define TRIGGER_EDGE 	0x00u
+#define TRIGGER_LEVEL 	0x01u
 
 #define BOTH_EDGE_DETECT_DISABLE		0x00u 
 #define BOTH_EDGE_DETECT_ENABLE			0x01u

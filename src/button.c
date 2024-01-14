@@ -4,14 +4,11 @@
 #include "gpio.h" 
 #include "timer.h" 
 
-ui8_t button1_state;
-ui8_t button1_read; 
+button_sts_t button1;
+ui8_t last_button1_read;
 
-ui8_t button2_state;
-ui8_t button2_read;
-
-ui8_t button1_debounce_state;
-ui8_t button2_debounce_state;
+button_sts_t button2;
+ui8_t last_button2_read;
 
 static void button1_set_port(void) {
 
@@ -20,17 +17,6 @@ static void button1_set_port(void) {
 	GPIO0_REGISTER_OUT = BIT_DISABLE;
 	GPIO0_REGISTER_IN = BIT_ENABLE;
 
-	/* Interrupt Setting Registers GPIO Port 0 */
-	/* depeding on MCU datasheet */
-	/* Disable External Interrupt*/
-	GPIO0_EXTERNAL_INTERRUPT_REGISTER_CONDITION = TRIGGER_FALLING_EDGE;
-	/* Enable External Interrupt*/
-
-
-	/* Input Capture Register for GPIO Port 0	*/
-	/* depeding on MCU datasheet */
-	GPIO0_SETTING_1 = ACTIVE_HIGH;				/* Active high setting */
-	GPIO0_SETTING_2 = BOTH_EDGE_DETECT_ENABLE; 	/* Assume same interrupt for both edge detection */
 	return;
 
 }
@@ -42,123 +28,138 @@ static void button2_set_port(void) {
 	GPIO1_REGISTER_IN = BIT_ENABLE;
 
 	/* Interrupt Setting Registers GPIO Port 0 */
-	/* depeding on MCU datasheet */
-	/* Disable External Interrupt*/
-	GPIO1_EXTERNAL_INTERRUPT_REGISTER_CONDITION = TRIGGER_FALLING_EDGE;
-	/* Enable External Interrupt*/
-
-
-	/* Input Capture Register for GPIO Port 0	*/
-	/* depeding on MCU datasheet */
-	GPIO1_SETTING_1 = ACTIVE_HIGH; 					/* Active high setting */
-	GPIO1_SETTING_2 = BOTH_EDGE_DETECT_ENABLE; 		/* Assume same interrupt for both edge detection */
 	return;
 
 }
 
-void button1_interrupt_handler(void) {
-	/* Assume same interrupt for both edge detection */
-	if (button1_debounce_state == DEBOUNCE_END) {
-		button1_debounce_state = DEBOUNCE_START;	/* Detected the START FALLING edge*/
-
-	}
-	else if (button1_debounce_state == DEBOUNCE_START) {
-		button1_debounce_state = DEBOUNCE_END;		/* Detected the END RISING edge*/
-	}
-	return;
-
-}
-
-void button2_interrupt_handler(void) {
-	/* Assume same interrupt for both edge detection */
-	if (button2_debounce_state == DEBOUNCE_END) {
-		button2_debounce_state = DEBOUNCE_START;	/* Detected the START FALLING edge*/
-
-	}
-	else if (button2_debounce_state == DEBOUNCE_START){
-		button2_debounce_state = DEBOUNCE_END;		/* Detected the END RISING edge*/
-	}
-	return;
-
-}
 
 ui8_t button1_get_state(void){
-	return 	button1_state;
+	return 	button1.state;
 }
 
 ui8_t button2_get_state(void){
-	return 	button2_state;
+	return 	button2.state;
 }
 
+// Function to handle level detection
+void button_level_detector(ui8_t currentLevel, ui8_t *state, ui8_t stableState) {
+	if (currentLevel == stableState) {
+		*state = BUTTON_PRESSED;
+	}
+	else {
+		*state = BUTTON_RELEASED;
+	}
+}
 
+// Function to handle edge detection
+void button_edge_detector(ui8_t currentLevel, ui8_t lastLevel, ui8_t* state, ui8_t risingEdgeState, ui8_t fallingEdgeState) {
+	if (currentLevel == risingEdgeState 
+		&& lastLevel == fallingEdgeState) {
+		*state = BUTTON_PRESSED;	//DETECTED_RISING_EDGE
+	}
+	else if (currentLevel == fallingEdgeState 
+			 && lastLevel == risingEdgeState) {
+		*state = BUTTON_RELEASED;	//DETECTED_FALLING_EDGE
+	}
+
+}
 
 void button1_debounce(void) {
-	if (button1_debounce_state == DEBOUNCE_START)
-	{
-		button1_read = (button1_read << 1) | GPIO0_READ_PIN(); /* Check button pressed for 40ms */
+	button1.read = (button1.read << 1) | GPIO0_READ_PIN(); // Check button state for 40ms
 
-		if (button1_read == 0xffu) {
-			button1_state = BUTTON_PRESSED;
+	if (button1.logic_level == ACTIVE_HIGH) {
+		if (button1.edge_type == TRIGGER_LEVEL) {
+			// Level detection for active-high configuration
+			button_level_detector(button1.read, &button1.state, 0xFFu);
+		}
+		else if (button1.edge_type == TRIGGER_EDGE) {
+			// Edge detection for active-high configuration
+			button_edge_detector(button1.read, last_button1_read, &button1.state, 0xFFu, 0x00u);
+		}
+
+	}
+	else if (button1.logic_level == ACTIVE_LOW) {
+		if (button1.edge_type == TRIGGER_LEVEL) {
+			// Level detection for active-high configuration
+			button_level_detector(button1.read, &button1.state, 0x00u);
+		}
+		else if (button1.edge_type == TRIGGER_EDGE) {
+			// Edge detection for active-high configuration
+			button_edge_detector(button1.read, last_button1_read, &button1.state, 0x00u, 0xFFu);
 		}
 	}
-	else if (button1_debounce_state == DEBOUNCE_END) {
-		button1_state = BUTTON_RELEASED;
-	}
+	last_button1_read = button1.read;
+
 	return;
 }
 
 void button2_debounce(void) {
-	if (button2_debounce_state == DEBOUNCE_START)
-	{
-		button2_read = (button2_read << 1) | GPIO0_READ_PIN(); /* Check button pressed for 40ms */
+	button2.read = (button2.read << 1) | GPIO1_READ_PIN(); // Check button state for 40ms
 
-		if (button2_read == 0xffu) {
-			button2_state = BUTTON_PRESSED;
+	if (button2.logic_level == ACTIVE_HIGH) {
+		if (button2.edge_type == TRIGGER_LEVEL) {
+			// Level detection for active-high configuration
+			button_level_detector(button2.read, &button2.state, 0xFFu);
+		}
+		else if (button2.edge_type == TRIGGER_EDGE) {
+			// Edge detection for active-high configuration
+			button_edge_detector(button2.read, last_button2_read, &button2.state, 0xFFu, 0x00u);
+		}
+
+	}
+	else if (button2.logic_level == ACTIVE_LOW) {
+		if (button2.edge_type == TRIGGER_LEVEL) {
+			// Level detection for active-high configuration
+			button_level_detector(button2.read, &button2.state, 0x00u);
+		}
+		else if (button2.edge_type == TRIGGER_EDGE) {
+			// Edge detection for active-high configuration
+			button_edge_detector(button2.read, last_button2_read, &button2.state, 0x00u, 0xFFu);
 		}
 	}
-	else if (button2_debounce_state == DEBOUNCE_END) {
-		button2_state = BUTTON_RELEASED;
-	}
+	last_button2_read = button2.read;
+
+	return;
+}
+
+/*cyclic handler for 5ms*/
+void button_main(void) {
+
+	button1_debounce();
+	button2_debounce();
 	return;
 
 }
-
+/* Assume this is called in the Main function */
 static void button_init(void){
 
-	const static timer_param_t button1_debounce_param = {
+	const static timer_param_t button_param = {
 		5u,					/* cyclic counter, 5ms*/
 		TIMER_CYCLIC,		/* cyclic single*/
 		TIMER_HIGH,			/* Timer ID, HIGH(1ms)*/
-		& button1_debounce
+		&button_main
 	};
 
-	timer_create(&button1_debounce_param); /* assume that timer will call the button_param every 5ms*/
+	timer_create(&button_param); /* assume that timer will call the button_param every 5ms*/
 
-	const static timer_param_t button2_debounce_param = {
-	5u,					/* cyclic counter, 5ms*/
-	TIMER_CYCLIC,		/* cyclic single*/
-	TIMER_HIGH,			/* Timer ID, HIGH(1ms)*/
-	&button1_debounce
-	};
-
-	timer_create(&button1_debounce_param); /* assume that timer will call the button_param every 5ms*/
-
-	// call interrupt_disable();
 	
 	// initialize buttons
+	button1.logic_level = ACTIVE_HIGH;
+	button1.edge_type = TRIGGER_EDGE;
+	button1.state = BUTTON_RELEASED;
+	button1.low_level_sts = BUTTON_RELEASED;
+	// call interrupt_disable();
 	button1_set_port();
-	button2_set_port();
-	
 	// call interrupt_enable();
-	
-	gpio0_interrupt_set_handler(&button1_interrupt_handler);
-	gpio1_interrupt_set_handler(&button2_interrupt_handler);
 
-	button1_debounce_state = DEBOUNCE_END;
-	button1_state = BUTTON_RELEASED;
-	
-	button2_debounce_state = DEBOUNCE_END; 
-	button1_state = BUTTON_RELEASED;
+	button2.logic_level = ACTIVE_LOW;
+	button2.edge_type = TRIGGER_LEVEL;
+	button2.state = BUTTON_RELEASED;
+	button2.low_level_sts = BUTTON_RELEASED;
+	// call interrupt_disable();
+	button2_set_port();
+	// call interrupt_enable();
+
 	
 	return;
 }

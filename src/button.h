@@ -4,6 +4,7 @@
 #define BUTTON_H
 
 #include "sys_type.h"
+
 // Define button 
 typedef enum button {
 	PB_1 = 0,
@@ -11,9 +12,17 @@ typedef enum button {
 	PB_INVALID
 }buttons_t;
 
+typedef struct {
+    ui8_t state;
+    ui8_t read;
+    ui8_t logic_level; //setting of ACTIVE HIGH or ACTIVE LOW
+    ui8_t edge_type;
+    ui8_t low_level_sts; //current state of Low level
+} button_sts_t;
 
-#define DEBOUNCE_START 			0x01u
-#define DEBOUNCE_END			0x02u
+
+#define DETECTED_RISING_EDGE 			0x00u
+#define DETECTED_FALLING_EDGE			0x01u
 
 #define BUTTON_PRESSED 			0x00u
 #define BUTTON_RELEASED 		0x01u
